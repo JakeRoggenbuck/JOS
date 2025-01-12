@@ -2,3 +2,17 @@
 JSON Object Store
 
 [![Build](https://img.shields.io/github/actions/workflow/status/JakeRoggenbuck/JOS/build.yml?branch=main&style=for-the-badge)](https://github.com/JakeRoggenbuck/JOS/actions)
+
+## Usage
+```
+export ADMIN_PASSWORD=<password>
+```
+
+```
+curl -u "Admin:$ADMIN_PASSWORD" -X GET http://localhost:8080/api/v1/
+```
+
+```
+curl -u "Admin:$ADMIN_PASSWORD" -X POST http://localhost:8080/api/v1/upload \
+     -F "myFile=@example.txt"
+```
