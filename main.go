@@ -1,11 +1,14 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"os"
-	"log"
+	"crypto/sha256"
+	"encoding/json"
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"io"
+	"log"
 	"net/http"
+	"os"
 )
 
 func getLogIn() gin.Accounts {
@@ -22,20 +25,63 @@ func getLogIn() gin.Accounts {
 	}
 }
 
-
 func homePage(c *gin.Context) {
-	c.String(http.StatusOK, "Home\n")
+	c.String(http.StatusOK, "JOS - JSON Object Store\n")
 }
 
 func uploadFile(c *gin.Context) {
+	// Get the file from the post context
 	file, err := c.FormFile("myFile")
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	log.Println(file.Filename)
+	// Open the file
+	openFile, err := file.Open()
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer openFile.Close()
 
-	c.SaveUploadedFile(file, "out/uploaded-"+file.Filename)
+	// Read the contents of the file
+	fileContents, err := io.ReadAll(openFile)
+	if err != nil {
+		log.Println("Error reading file:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read file"})
+		return
+	}
+
+	// Generate hash of the file contents
+	file_hash := sha256.Sum256([]byte(fileContents))
+	file_hash_filename := string(file_hash[:])
+
+	// Save the file to the out directory
+	c.SaveUploadedFile(file, "out/" + file_hash_filename)
+
+	c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
+}
+
+func uploadJSON(c *gin.Context) {
+	// Dynamic JSON structure
+	var jsonData map[string]interface{}
+
+	// Bind incoming JSON to the map
+	if err := c.ShouldBindJSON(&jsonData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Convert JSON to a byte slice
+	jsonBytes, err := json.Marshal(jsonData)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to serialize JSON"})
+		return
+	}
+
+	json_hash := sha256.Sum256([]byte(jsonBytes))
+	json_hash_filename := string(json_hash[:])
+
+	c.SaveUploadedFile(jsonBytes, "out/" + json_hash_filename)
 	c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
 }
 
@@ -48,7 +94,8 @@ func main() {
 	authedSubRoute := router.Group(routeStart, gin.BasicAuth(authAccount))
 
 	authedSubRoute.GET("/", homePage)
-	authedSubRoute.POST("/upload", uploadFile)
+	authedSubRoute.POST("/upload-file", uploadFile)
+	authedSubRoute.POST("/upload-json", uploadJSON)
 
 	router.Run(":8080")
 }
