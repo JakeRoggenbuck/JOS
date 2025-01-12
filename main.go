@@ -58,7 +58,10 @@ func uploadFile(c *gin.Context) {
 	// Save the file to the out directory
 	c.SaveUploadedFile(file, "out/" + file_hash_filename)
 
-	c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
+	c.JSON(http.StatusOK, gin.H{
+		"message":  "File uploaded and saved successfully!",
+		"filename": file_hash_filename,
+	})
 }
 
 func uploadJSON(c *gin.Context) {
@@ -81,13 +84,17 @@ func uploadJSON(c *gin.Context) {
 	json_hash := sha256.Sum256([]byte(jsonBytes))
 	json_hash_filename := string(json_hash[:])
 
+	// Write JSON file out
 	err = os.WriteFile("out/" + json_hash_filename, jsonBytes, 0644)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save JSON to file"})
 		return
 	}
 
-	c.String(http.StatusOK, fmt.Sprintf("Uploaded JSON!"))
+	c.JSON(http.StatusOK, gin.H{
+		"message":  "JSON uploaded and saved successfully!",
+		"filename": json_hash_filename,
+	})
 }
 
 func main() {
