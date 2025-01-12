@@ -12,7 +12,8 @@ export ADMIN_PASSWORD=<password>
 
 ### Upload a file
 ```
-curl -u "Admin:$ADMIN_PASSWORD" -F "myFile=@path_to_your_file" http://localhost:8080/api/v1/upload-file
+curl -u "Admin:$ADMIN_PASSWORD" -F "myFile=@path_to_your_file" \
+    http://localhost:8080/api/v1/upload-file
 ```
 
 ```json
