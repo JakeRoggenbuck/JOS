@@ -81,8 +81,13 @@ func uploadJSON(c *gin.Context) {
 	json_hash := sha256.Sum256([]byte(jsonBytes))
 	json_hash_filename := string(json_hash[:])
 
-	c.SaveUploadedFile(jsonBytes, "out/" + json_hash_filename)
-	c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
+	err = os.WriteFile("out/" + json_hash_filename, jsonBytes, 0644)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save JSON to file"})
+		return
+	}
+
+	c.String(http.StatusOK, fmt.Sprintf("Uploaded JSON!"))
 }
 
 func main() {
