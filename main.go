@@ -53,15 +53,36 @@ func uploadFile(c *gin.Context) {
 
 	// Generate hash of the file contents
 	file_hash := sha256.Sum256([]byte(fileContents))
-	file_hash_filename := string(file_hash[:])
+	file_hash_filename := fmt.Sprintf("%x", file_hash)
 
 	// Save the file to the out directory
 	c.SaveUploadedFile(file, "out/" + file_hash_filename)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":  "File uploaded and saved successfully!",
-		"filename": file_hash_filename,
+		"hash": file_hash_filename,
 	})
+}
+
+func getFile(c *gin.Context) {
+	// Get the "hash" url parameter
+	fileHash := c.DefaultQuery("hash", "")
+
+	if fileHash == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "File hash is required"})
+		return
+	}
+
+	filePath := "out/" + fileHash
+
+	file, err := os.Open(filePath)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
+		return
+	}
+	defer file.Close()
+
+	c.File(filePath)
 }
 
 func uploadJSON(c *gin.Context) {
@@ -82,7 +103,7 @@ func uploadJSON(c *gin.Context) {
 	}
 
 	json_hash := sha256.Sum256([]byte(jsonBytes))
-	json_hash_filename := string(json_hash[:])
+	json_hash_filename := fmt.Sprintf("%x", json_hash)
 
 	// Write JSON file out
 	err = os.WriteFile("out/" + json_hash_filename, jsonBytes, 0644)
@@ -93,8 +114,29 @@ func uploadJSON(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":  "JSON uploaded and saved successfully!",
-		"filename": json_hash_filename,
+		"hash": json_hash_filename,
 	})
+}
+
+func getJSON(c *gin.Context) {
+	// Get the "hash" url parameter
+	jsonHash := c.DefaultQuery("hash", "")
+
+	if jsonHash == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "JSON hash is required"})
+		return
+	}
+
+	jsonFilePath := "out/" + jsonHash
+
+	jsonFile, err := os.Open(jsonFilePath)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "JSON file not found"})
+		return
+	}
+	defer jsonFile.Close()
+
+	c.File(jsonFilePath)
 }
 
 func main() {
@@ -108,6 +150,9 @@ func main() {
 	authedSubRoute.GET("/", homePage)
 	authedSubRoute.POST("/upload-file", uploadFile)
 	authedSubRoute.POST("/upload-json", uploadJSON)
+
+	authedSubRoute.GET("/get-file", getFile)
+	authedSubRoute.GET("/get-json", getJSON)
 
 	router.Run(":8080")
 }
