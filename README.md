@@ -30,8 +30,8 @@ curl -u "Admin:$ADMIN_PASSWORD" http://localhost:8080/api/v1/get-file?hash=<hash
 
 ### Upload JSON
 ```
-curl -u "Admin:$ADMIN_PASSWORD" -X POST -H "Content-Type: application/json" -d '{"key": "value"}' \
-     http://localhost:8080/api/v1/upload-json
+curl -u "Admin:$ADMIN_PASSWORD" -X POST -H "Content-Type: application/json" \
+    -d '{"key": "value"}' http://localhost:8080/api/v1/upload-json
 ```
 
 ```json
