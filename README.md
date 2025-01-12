@@ -10,11 +10,37 @@ JSON Object Store
 export ADMIN_PASSWORD=<password>
 ```
 
+### Upload a file
 ```
-curl -u "Admin:$ADMIN_PASSWORD" -X GET http://localhost:8080/api/v1/
+curl -u "Admin:$ADMIN_PASSWORD" -F "myFile=@path_to_your_file" http://localhost:8080/api/v1/upload-file
 ```
 
+```json
+{
+  "hash": "<hash>",
+  "message": "File uploaded and saved successfully!"
+}
 ```
-curl -u "Admin:$ADMIN_PASSWORD" -X POST http://localhost:8080/api/v1/upload-file \
-     -F "myFile=@example.txt"
+
+### Get a file
+```
+curl -u "Admin:$ADMIN_PASSWORD" http://localhost:8080/api/v1/get-file?hash=<hash>
+```
+
+### Upload JSON
+```
+curl -u "Admin:$ADMIN_PASSWORD" -X POST -H "Content-Type: application/json" -d '{"key": "value"}' \
+     http://localhost:8080/api/v1/upload-json
+```
+
+```json
+{
+  "hash": "<hash>",
+  "message": "JSON uploaded and saved successfully!"
+}
+```
+
+### Get JSON
+```
+curl -u "Admin:$ADMIN_PASSWORD" http://localhost:8080/api/v1/get-json?hash=<hash>
 ```
