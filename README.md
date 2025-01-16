@@ -45,3 +45,20 @@ curl -u "Admin:$ADMIN_PASSWORD" -X POST -H "Content-Type: application/json" \
 ```
 curl -u "Admin:$ADMIN_PASSWORD" http://localhost:8080/api/v1/get-json?hash=<hash>
 ```
+
+## Setup
+
+Build the container
+```
+docker build -t jos-server .
+```
+
+Run the container
+```
+docker run -d --name jos_server -p 8080:8080 jos-server
+```
+
+Check that it's running
+```
+docker ps
+```
