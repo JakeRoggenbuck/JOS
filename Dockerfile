@@ -6,6 +6,8 @@ ENV ADMIN_PASSWORD="123"
 
 COPY . .
 
+RUN mkdir /app/out
+
 EXPOSE 8080
 
 CMD ["go", "run", "."]
